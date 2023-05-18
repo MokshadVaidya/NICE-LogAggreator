@@ -36,10 +36,10 @@ class CustomTextField extends StatelessWidget {
           icon,
           color: Colors.white,
         ),
-        focusedBorder: OutlineInputBorder(
+        focusedBorder: const OutlineInputBorder(
           borderSide:
               BorderSide(color: Colors.white, width: 2.0),
-          borderRadius: const BorderRadius.all(Radius.circular(25.0)),
+          borderRadius: BorderRadius.all(Radius.circular(25.0)),
         ),
       ),
       controller: controller,

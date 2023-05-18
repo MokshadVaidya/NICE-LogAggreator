@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'dart:developer';
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -16,11 +16,14 @@ class UploadLinks extends StatefulWidget {
 }
 
 class _UploadLinksState extends State<UploadLinks> {
-  late TextEditingController controller;
+  late TextEditingController agentIdController;
+  late TextEditingController threadIdController;
+  late TextEditingController startDateTimeController;
+  late TextEditingController endDateTimeController;
 
   Future<void> _pickFiles() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
-    print("result is $result");
+    log("result is $result");
     if (result != null && result.files.isNotEmpty) {
       // Handle the picked files here
       for (var file in result.files) {
@@ -30,25 +33,27 @@ class _UploadLinksState extends State<UploadLinks> {
         String encodedFile = base64.encode(fileBytes);
 
         // Convert Base64 to a string
-        String encodedFileString = encodedFile.substring(0,encodedFile.length-2).toString();
-        print("encoded file is $encodedFileString");
-        var url = Uri.parse('http://127.0.0.1:5000/logAggregator');
+        String encodedFileString = encodedFile.toString();
+        log("encoded file is $encodedFileString");
+        var url = Uri.parse('http://127.0.0.1:8111/logAggregator');
 
-        var res = await http.post(url, headers: {
-      'Content-Type': 'application/json; charset=UTF-8',
-    },body: jsonEncode({
-          "AgentId": "2",
-          "filterList": '["1", "2"]',
-          "startDatetime": "2023-01-27 14:30:21.220",
-          "endDatetime": "2023-01-27 15:30:21.220",
-          // "threadIds": threadIds,
-          "files": {
-            'ascwsfiles': [encodedFileString],
-            'acdavayafiles':[],
-            'swxevdfiles':[]
-          }
-        }));
-        print(res.body);
+        var res = await http.post(url,
+            headers: {
+              'Content-Type': 'application/json; charset=UTF-8',
+            },
+            body: jsonEncode({
+              "AgentId": "2",
+              "filterList": ["1", "2"],
+              "startDatetime": "2023-01-27 14:30:21.220",
+              "endDatetime": "2023-01-27 15:30:21.220",
+              // "threadIds": threadIds,
+              "files": {
+                'ascwsfiles': [],
+                'acdavayafiles': [encodedFile],
+                'swxevdfiles': []
+              }
+            }));
+        log(res.body);
       }
     }
   }
@@ -64,8 +69,12 @@ class _UploadLinksState extends State<UploadLinks> {
   @override
   void initState() {
     super.initState();
-    controller = TextEditingController();
+    agentIdController = TextEditingController();
   }
+
+  bool acdSwiVal = false;
+  bool swxSwiVal = false;
+  bool ascSwiVal = false;
 
   @override
   Widget build(BuildContext context) {
@@ -88,38 +97,64 @@ class _UploadLinksState extends State<UploadLinks> {
                     image: AssetImage("assets/mainBackground.jpg"))),
             child: Column(children: [
               selectFileCubit.isACD
-                  ? CustomTextField("Upload ACD Files", Icons.abc,
-                      controller: controller, obscureText: false)
-                  : SizedBox(),
-              selectFileCubit.isAwaya
-                  ? CustomTextField("Upload Awaya Files", Icons.abc,
-                      controller: controller, obscureText: false)
-                  : SizedBox(),
-              selectFileCubit.isAcxwx
-                  ? CustomTextField("Upload Acxwx Files", Icons.abc,
-                      controller: controller, obscureText: false)
-                  : SizedBox(),
+                  ? SelectFile(
+                      title: "Upload ACD Files",
+                      swival: acdSwiVal,
+                      selectFilefuc: () {
+                        selectFileCubit.getFiles(LogFileType.acd, acdSwiVal);
+                      },
+                      onPressed: (value) {
+                        setState(() {
+                          acdSwiVal = value;
+                        });
+                      })
+                  : const SizedBox(),
+              selectFileCubit.isAsc
+                  ? SelectFile(
+                      title: "Upload Ascws Files",
+                      swival: ascSwiVal,
+                      selectFilefuc: () {
+                        selectFileCubit.getFiles(LogFileType.awa, ascSwiVal);
+                      },
+                      onPressed: (value) {
+                        setState(() {
+                          ascSwiVal = value;
+                        });
+                      })
+                  : const SizedBox(),
+              selectFileCubit.isSwx
+                  ? SelectFile(
+                      title: "Upload swxevd Files",
+                      swival: swxSwiVal,
+                      selectFilefuc: () {
+                        selectFileCubit.getFiles(LogFileType.swx, swxSwiVal);
+                      },
+                      onPressed: (value) {
+                        setState(() {
+                          swxSwiVal = value;
+                        });
+                      })
+                  : const SizedBox(),
               Row(
                 children: [
                   Expanded(
                       child: CustomTextField("Agent ID", Icons.abc,
-                          controller: controller, obscureText: false)),
+                          controller: agentIdController, obscureText: false)),
                   selectFileCubit.threadId
                       ? Expanded(
                           child: CustomTextField("Thread ID", Icons.abc,
-                              controller: controller, obscureText: false))
-                      : SizedBox(),
+                              controller: threadIdController =
+                                  TextEditingController(),
+                              obscureText: false))
+                      : const SizedBox(),
                   selectFileCubit.logLevel
                       ? Expanded(
                           child: DropdownButton<String>(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(25.0)),
                           value: dropdownValue,
                           icon: const Icon(Icons.arrow_downward),
                           elevation: 16,
-                          style: const TextStyle(color: Colors.deepPurple),
-                          underline: Container(
-                            height: 2,
-                            color: Colors.deepPurpleAccent,
-                          ),
                           onChanged: (String? value) {
                             // This is called when the user selects an item.
                             setState(() {
@@ -134,32 +169,76 @@ class _UploadLinksState extends State<UploadLinks> {
                             );
                           }).toList(),
                         ))
-                      : SizedBox()
+                      : const SizedBox()
                 ],
               ),
               selectFileCubit.dateTime
-                  ? DateTimePicker(
-                      type: DateTimePickerType.dateTimeSeparate,
-                      initialValue: '',
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2100),
-                      dateLabelText: 'Date',
-                      timeLabelText: "Hour",
-                      onChanged: (val) => print(val),
-                      validator: (val) {
-                        return null;
-                      },
-                      onSaved: (val) => print(val),
+                  ? Row(
+                      children: [
+                        Expanded(
+                            child: CustomTextField("Start DateTime", Icons.abc,
+                                controller: startDateTimeController =
+                                    TextEditingController(),
+                                obscureText: false)),
+                        Expanded(
+                            child: CustomTextField("End DateTime", Icons.abc,
+                                controller: endDateTimeController =
+                                    TextEditingController(),
+                                obscureText: false)),
+                      ],
                     )
-                  : SizedBox(),
+                  : const SizedBox(),
               ElevatedButton(
-                onPressed: _pickFiles,
-                child: Text('Pick Files'),
+                onPressed: () {
+                  selectFileCubit.agentId = agentIdController.text;
+                  selectFileCubit.threadId
+                      ? selectFileCubit.threadids = threadIdController.text
+                      : "";
+                  if (selectFileCubit.dateTime) {
+                    selectFileCubit.startDatetime =
+                        startDateTimeController.text;
+                    selectFileCubit.endDatetime = endDateTimeController.text;
+                  }
+                  selectFileCubit.makeJson();
+                },
+                child: const Text('Upload Files'),
               ),
             ]),
           ),
         ),
       ),
+    );
+  }
+}
+
+class SelectFile extends StatelessWidget {
+  SelectFile({
+    super.key,
+    required this.title,
+    required this.swival,
+    required this.selectFilefuc,
+    required this.onPressed,
+  });
+  final String title;
+  final bool swival;
+  VoidCallback selectFilefuc;
+  void Function(bool) onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ElevatedButton(
+          onPressed: selectFilefuc,
+          child: Text(title),
+        ),
+        Switch(
+          value: swival, // Set the initial value of the switch
+          onChanged: onPressed,
+        ),
+        Text("Is multiple files",style: TextStyle(color: Colors.white),)
+      ],
     );
   }
 }

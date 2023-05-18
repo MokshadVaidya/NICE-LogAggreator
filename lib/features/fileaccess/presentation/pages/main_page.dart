@@ -1,4 +1,3 @@
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:log_aggregator/features/fileaccess/presentation/pages/dialogbox.dart';
@@ -45,7 +44,7 @@ class _SelectFilesState extends State<SelectFiles> {
                       ) {
                         return AlertDialog(content: StatefulBuilder(
                           builder: (context, setState) {
-                            return DialogBox();
+                            return const DialogBox();
                           },
                         ));
                       });
@@ -56,7 +55,7 @@ class _SelectFilesState extends State<SelectFiles> {
                   decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(40)),
-                      child: Center(child: Text("Select Files for user stories",style: TextStyle(fontWeight: FontWeight.bold),)),
+                      child: const Center(child: Text("Select Files for user stories",style: TextStyle(fontWeight: FontWeight.bold),)),
                 ),
               ),
             )

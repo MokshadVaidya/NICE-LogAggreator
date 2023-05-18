@@ -1,5 +1,3 @@
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:log_aggregator/features/fileaccess/presentation/cubit/select_files_cubit.dart';
@@ -44,21 +42,20 @@ class _DialogBoxState extends State<DialogBox> {
               color: Colors.white,
               child: Column(
                 children: [
-                  Text("Select log files you are uploading"),
+                  const Text("Select log files you are uploading"),
                   Row(
                     children: [
                       Checkbox(
                         checkColor: Colors.white,
                         fillColor: MaterialStateProperty.resolveWith(getColor),
-                        value: selectFileCubit.isAwaya,
+                        value: selectFileCubit.isAsc,
                         onChanged: (bool? value) {
                           setState(() {
-                            selectFileCubit.isAwaya = value!;
-                            print(value);
+                            selectFileCubit.isAsc = value!;
                           });
                         },
                       ),
-                      Text("Awaya log file")
+                      const Text("Awaya log file")
                     ],
                   ),
                   Row(
@@ -73,7 +70,7 @@ class _DialogBoxState extends State<DialogBox> {
                           });
                         },
                       ),
-                      Text("ACD log file")
+                      const Text("ACD log file")
                     ],
                   ),
                   Row(
@@ -81,17 +78,17 @@ class _DialogBoxState extends State<DialogBox> {
                       Checkbox(
                         checkColor: Colors.white,
                         fillColor: MaterialStateProperty.resolveWith(getColor),
-                        value: selectFileCubit.isAcxwx,
+                        value: selectFileCubit.isSwx,
                         onChanged: (bool? value) {
                           setState(() {
-                            selectFileCubit.isAcxwx = value!;
+                            selectFileCubit.isSwx = value!;
                           });
                         },
                       ),
-                      Text("Acxwx log file")
+                      const Text("Acxwx log file")
                     ],
                   ),
-                  Text("Choose Filtering criteria"),
+                  const Text("Choose Filtering criteria"),
                   Row(
                     children: [
                       Checkbox(
@@ -104,7 +101,7 @@ class _DialogBoxState extends State<DialogBox> {
                           });
                         },
                       ),
-                      Text("Date Time")
+                      const Text("Date Time")
                     ],
                   ),
                   Row(
@@ -119,7 +116,7 @@ class _DialogBoxState extends State<DialogBox> {
                           });
                         },
                       ),
-                      Text("Thread Id")
+                      const Text("Thread Id")
                     ],
                   ),
                   Row(
@@ -134,21 +131,23 @@ class _DialogBoxState extends State<DialogBox> {
                           });
                         },
                       ),
-                      Text("Log Level")
+                      const Text("Log Level")
                     ],
                   ),
-                  Spacer(),
+                  const Spacer(),
                   TextButton(
                       onPressed: () {
+                        selectFileCubit.generateFilterList();
+                        print(selectFileCubit.filterList);
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
                           return BlocProvider.value(
                             value: selectFileCubit,
-                            child: UploadLinks(),
+                            child: const UploadLinks(),
                           );
                         }));
                       },
-                      child: Text("Upload links >>"))
+                      child: const Text("Upload links >>"))
                 ],
               ));
         },
